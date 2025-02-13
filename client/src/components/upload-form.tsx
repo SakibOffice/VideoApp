@@ -15,9 +15,16 @@ export function UploadForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a video file"
+      });
+      return;
+    }
 
-    const parseResult = insertVideoSchema.safeParse({ title });
+    const parseResult = insertVideoSchema.safeParse({ title, filename: file.name });
     if (!parseResult.success) {
       toast({
         variant: "destructive",
@@ -38,7 +45,10 @@ export function UploadForm() {
         body: formData
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Upload failed');
+      }
 
       toast({
         title: "Success",
@@ -52,7 +62,7 @@ export function UploadForm() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload video"
+        description: error instanceof Error ? error.message : "Failed to upload video"
       });
     } finally {
       setUploading(false);
@@ -63,17 +73,23 @@ export function UploadForm() {
     <Card>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="text"
-            placeholder="Video title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Input
-            type="file"
-            accept=".mp4,.webm,.mov"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
+          <div className="space-y-2">
+            <Input
+              type="text"
+              placeholder="Video title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Input
+              type="file"
+              accept=".mp4,.webm,.mov"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              required
+            />
+          </div>
           <Button type="submit" disabled={!file || uploading} className="w-full">
             {uploading ? "Uploading..." : "Upload Video"}
           </Button>

@@ -8,9 +8,15 @@ import fs from "fs/promises";
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: "uploads/",
+    destination: (_req, _file, cb) => {
+      fs.mkdir("uploads", { recursive: true })
+        .then(() => cb(null, "uploads/"))
+        .catch(err => cb(err, "uploads/"));
+    },
     filename: (_req, file, cb) => {
-      cb(null, Date.now() + path.extname(file.originalname));
+      // Ensure unique filenames with timestamps
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+      cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
     }
   }),
   fileFilter: (_req, file, cb) => {
@@ -25,12 +31,12 @@ const upload = multer({
 });
 
 export function registerRoutes(app: Express): Server {
-  // Ensure uploads directory exists
+  // Ensure uploads directory exists on startup
   fs.mkdir("uploads", { recursive: true }).catch(console.error);
 
   app.post("/api/auth", (req, res) => {
     const { username, password } = req.body;
-    
+
     if (username === credentials.admin.username && password === credentials.admin.password) {
       res.json({ role: "admin" });
     } else if (username === credentials.editor.username && password === credentials.editor.password) {
@@ -46,23 +52,34 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.post("/api/videos", upload.single("video"), async (req: Request & { file?: Express.Multer.File }, res) => {
-    if (!req.file) {
-      return res.status(400).json({ message: "No video file uploaded" });
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No video file uploaded" });
+      }
+
+      const parseResult = insertVideoSchema.safeParse({
+        title: req.body.title,
+        filename: req.file.filename
+      });
+
+      if (!parseResult.success) {
+        // Delete the uploaded file if validation fails
+        await fs.unlink(path.join("uploads", req.file.filename)).catch(console.error);
+        return res.status(400).json({ message: parseResult.error.message });
+      }
+
+      const video = await storage.addVideo({
+        title: req.body.title,
+        filename: req.file.filename,
+        uploadedBy: "editor", // Since we know it's the editor uploading
+        uploadedAt: new Date().toISOString()
+      });
+
+      res.json(video);
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: "Failed to process video upload" });
     }
-
-    const parseResult = insertVideoSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({ message: "Invalid video data" });
-    }
-
-    const video = await storage.addVideo({
-      title: req.body.title,
-      filename: req.file.filename,
-      uploadedBy: req.body.username || "unknown",
-      uploadedAt: new Date().toISOString()
-    });
-
-    res.json(video);
   });
 
   app.get("/api/videos/:filename", async (req, res) => {
