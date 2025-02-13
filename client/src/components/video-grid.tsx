@@ -15,15 +15,17 @@ export function VideoGrid() {
 
   return (
     <ScrollArea className="h-[calc(100vh-2rem)]">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
         {videos?.map((video) => (
-          <Card key={video.id}>
-            <CardHeader>
-              <CardTitle>{video.title}</CardTitle>
+          <Card key={video.id} className="flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">{video.title}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <VideoPlayer url={`/api/videos/${video.filename}`} />
-              <div className="mt-2 text-sm text-muted-foreground">
+            <CardContent className="pt-0">
+              <div className="mb-3">
+                <VideoPlayer url={`/api/videos/${video.filename}`} />
+              </div>
+              <div className="text-sm text-muted-foreground">
                 Uploaded by {video.uploadedBy} on{" "}
                 {new Date(video.uploadedAt).toLocaleDateString()}
               </div>

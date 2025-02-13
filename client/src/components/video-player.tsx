@@ -7,10 +7,12 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ url }: VideoPlayerProps) {
   return (
-    <Card className="overflow-hidden w-full">
+    <Card className="overflow-hidden w-full bg-black rounded-lg">
       <div 
-        className="relative aspect-video bg-black"
-        style={{ minHeight: '240px' }}
+        className="relative w-full"
+        style={{ 
+          paddingTop: '56.25%', // 16:9 Aspect Ratio
+        }}
       >
         <ReactPlayer
           url={url}
@@ -19,20 +21,19 @@ export function VideoPlayer({ url }: VideoPlayerProps) {
           controls={true}
           playing={false}
           playsinline={true}
-          pip={false}
           config={{
             file: {
               attributes: {
                 style: {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
                   width: '100%',
-                  height: '100%',
-                  objectFit: 'contain'
+                  height: '100%'
                 },
                 controlsList: 'nodownload',
               },
               forceVideo: true,
-              forceHLS: false,
-              forceDASH: false
             }
           }}
           style={{
