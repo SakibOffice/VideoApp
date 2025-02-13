@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import EditorDashboard from "@/pages/editor-dashboard";
+import VideoTheater from "@/pages/video-theater";
 
 function Router() {
   return (
@@ -13,6 +14,7 @@ function Router() {
       <Route path="/" component={Login} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/editor" component={EditorDashboard} />
+      <Route path="/video/:id" component={VideoTheater} />
       <Route component={NotFound} />
     </Switch>
   );
