@@ -7,18 +7,21 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ url }: VideoPlayerProps) {
   return (
-    <Card className="overflow-hidden">
-      <div className="aspect-video">
+    <Card className="overflow-hidden w-full">
+      <div className="relative aspect-video">
         <ReactPlayer
           url={url}
           width="100%"
           height="100%"
           controls
+          playsinline
           config={{
             file: {
               attributes: {
-                controlsList: "nodownload"
-              }
+                controlsList: "nodownload",
+                style: { width: '100%', height: '100%' }
+              },
+              forceVideo: true
             }
           }}
         />
