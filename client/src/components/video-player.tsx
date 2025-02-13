@@ -21,19 +21,22 @@ export function VideoPlayer({ url }: VideoPlayerProps) {
           controls={true}
           playing={false}
           playsinline={true}
+          pip={true}
+          stopOnUnmount={true}
           config={{
             file: {
               attributes: {
+                controlsList: 'nodownload', // Prevent default download
                 style: {
                   position: 'absolute',
                   top: 0,
                   left: 0,
                   width: '100%',
                   height: '100%'
-                },
-                controlsList: 'nodownload',
+                }
               },
               forceVideo: true,
+              forceSafariHLS: true,
             }
           }}
           style={{
